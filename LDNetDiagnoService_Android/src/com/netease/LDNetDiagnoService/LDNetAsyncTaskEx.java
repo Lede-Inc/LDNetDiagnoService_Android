@@ -189,7 +189,7 @@ public abstract class LDNetAsyncTaskEx<Params, Progress, Result> {
 		new LDNetAsyncTaskResult<Progress>(this, values)).sendToTarget();
     }
 
-    private void finish(Result result) {
+    protected void finish(Result result) {
 	if (isCancelled()) {
 	    result = null;
 	}

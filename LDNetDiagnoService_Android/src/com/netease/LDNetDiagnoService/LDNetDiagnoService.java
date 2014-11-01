@@ -77,13 +77,15 @@ public class LDNetDiagnoService extends LDNetAsyncTaskEx<String, String, String>
 
     @Override
     protected String doInBackground(String... params) {
+    	if(this.isCancelled()) return null;
     	// TODO Auto-generated method stub
-    	return startNetDiagnosis();
+    	return this.startNetDiagnosis();
     }
 
     
     @Override
     protected void onPostExecute(String result) {
+    	if(this.isCancelled()) return;
     	super.onPostExecute(result);
     	if (_netDiagnolistener != null) {
     		_netDiagnolistener.OnNetDiagnoFinished(result);
@@ -93,11 +95,17 @@ public class LDNetDiagnoService extends LDNetAsyncTaskEx<String, String, String>
 
     @Override
     protected void onProgressUpdate(String... values) {
+    	if(this.isCancelled()) return;
     	// TODO Auto-generated method stub
     	super.onProgressUpdate(values);
     	if (_netDiagnolistener != null) {
     		_netDiagnolistener.OnNetDiagnoUpdated(values[0]);
     	}
+    }
+    
+    @Override 
+    protected void onCancelled() {
+    	this.stopNetDialogsis();
     }
 
 
@@ -163,8 +171,6 @@ public class LDNetDiagnoService extends LDNetAsyncTaskEx<String, String, String>
 	        if(_traceRouter != null) {
 	            _traceRouter = null;
 	        }
-	        
-	        this.cancel(true);
 	        _isRunning = false;
 	    }
 	}
