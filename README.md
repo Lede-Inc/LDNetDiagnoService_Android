@@ -38,7 +38,7 @@
 
 1. Android的service作为一个后台任务，每次开始诊断需要重新初始化一个任务；通过在监控界面设置LDNetDiagnoListener接口的方法监控日志输出；
 
-	* tip：初始化参数只需要初始化appcode，userID, dormain（必须）, 其他参数如果不设置，service会自动补上这些日志参数；
+	* tip：初始化参数只需要初始化appcode，userID, dormain（必须）, 其他参数选填；
 		
 
 			public class MainActivity extends Activity implements OnClickListener, LDNetDiagnoListener{
