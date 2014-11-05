@@ -27,7 +27,7 @@ public class MainActivity extends Activity implements OnClickListener, LDNetDiag
 		setContentView(R.layout.activity_main);
 		btn = (Button) findViewById(R.id.btn);
 		btn.setOnClickListener(this);
-		
+
 		progress = (ProgressBar) findViewById(R.id.progress);
 		progress.setVisibility(View.INVISIBLE);
 		text = (TextView) findViewById(R.id.text);
@@ -52,14 +52,14 @@ public class MainActivity extends Activity implements OnClickListener, LDNetDiag
 		return super.onOptionsItemSelected(item);
 	}
 
-	
+
 	@Override
 	public void onClick(View v) {
 		if(v == btn) {
 			if(!isRunning){
 				showInfo = "";
 				_netDiagnoService = new LDNetDiagnoService(
-						"testDemo", "网络诊断应用", "1.0.0", 
+						"testDemo", "网络诊断应用", "1.0.0",
 						"huipang@corp.netease.com",  "deviceID(option)", "caipiao.163.com",
 						"carriname", "ISOCountyCode", "MobilCountryCode", "MobileNetCode", this);
 				_netDiagnoService.execute();
@@ -72,14 +72,15 @@ public class MainActivity extends Activity implements OnClickListener, LDNetDiag
 				_netDiagnoService.cancel(true);
 				_netDiagnoService = null;
 			}
-			
+
 			isRunning = !isRunning;
 		}
 	}
 
-	
+
 	@Override
 	public void OnNetDiagnoFinished(String log) {
+		text.setText(log);
 		progress.setVisibility(View.GONE);
 		btn.setText("开始诊断");
 		_netDiagnoService = null;

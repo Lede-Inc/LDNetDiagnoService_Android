@@ -7,16 +7,30 @@ import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.util.Log;
+
 /**
  * 通过ping模拟traceroute过程
  * @author panghui
  *
  */
 public class LDNetTraceRoute{
+	private String LOG_TAG = "LDNetTraceRoute";
+	private static LDNetTraceRoute instance;
+	private LDNetTraceRoute (){
+	}
+	public static LDNetTraceRoute getInstance() {
+		if (instance == null) {
+			instance = new LDNetTraceRoute();
+		}
+		return instance;
+	}
+
 
     LDNetTraceRouteListener listener;
+    public final boolean isCTrace = true;
 
-    public LDNetTraceRoute(LDNetTraceRouteListener listener) {
+    public void initListenter(LDNetTraceRouteListener listener) {
     	this.listener = listener;
     }
 
@@ -33,16 +47,46 @@ public class LDNetTraceRoute{
 
 
     /**
-     * 执行指定host的traceroute 
+     * 执行指定host的traceroute
      * @param host
      * @return
      */
     public void startTraceRoute(String host) {
-    	TraceTask trace = new TraceTask(host, 1);
-    	execTrace(trace);
+    	if(this.isCTrace){
+    		startJNICTraceRoute(host);
+    	} else {
+    		TraceTask trace = new TraceTask(host, 1);
+    		execTrace(trace);
+    	}
     }
-    
-    
+
+    public void resetInstance(){
+    	if (instance != null) {
+			instance = null;
+		}
+    }
+
+
+
+	/**
+	 * 调用jni c函数执行traceroute过程
+	 */
+    public native void startJNICTraceRoute(String traceCommand);
+
+    static {
+    	System.loadLibrary("tracepath");
+    }
+
+    /**
+     * 供jni c函数回调
+     * @param log
+     */
+    public void printTraceInfo(String log){
+    	Log.i(LOG_TAG, log);
+    	this.listener.OnNetTraceUpdated(log.toString());
+    }
+
+
     private static final String MATCH_TRACE_IP = "(?<=From )(?:[0-9]{1,3}\\.){3}[0-9]{1,3}";
     private static final String MATCH_PING_IP = "(?<=from ).*(?=: icmp_seq=1 ttl=)";
     private static final String MATCH_PING_TIME = "(?<=time=).*?ms";
@@ -66,7 +110,7 @@ public class LDNetTraceRoute{
 		    }
 		    reader.close();
 		    process.waitFor();
-	
+
 		} catch (IOException e) {
 		    e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -104,7 +148,7 @@ public class LDNetTraceRoute{
     			//-c 1 同时发送消息次数 －t是指跳数
     			String command = "ping -c 1 -t " + trace.getHop() + " "
     					+ trace.getHost();
-	
+
     			process = Runtime.getRuntime().exec(command);
     			reader = new BufferedReader(new InputStreamReader(
 					process.getInputStream()));
@@ -114,15 +158,15 @@ public class LDNetTraceRoute{
     			}
     			reader.close();
     			process.waitFor();
-	
+
     			Matcher m = patternTrace.matcher(str);
-    			
+
     			//如果成功获得trace:IP，则再次发送ping命令获取ping的时间
     			StringBuilder log = new StringBuilder(256);
     			if (m.find()) {
     				String pingIp = m.group();
     				PingTask pingTask = new PingTask(pingIp);
-	
+
     				String status = execPing(pingTask);
     				if (status.length() == 0) {
     					log.append("unknown host or network error\n");
@@ -146,9 +190,9 @@ public class LDNetTraceRoute{
     					this.listener.OnNetTraceUpdated(log.toString());
     					trace.setHop(trace.getHop() + 1);
     				}
-	
-    			} 
-    			
+
+    			}
+
     			//否则：what
     			else {
     				Matcher matchPingIp = patternIp.matcher(str);
@@ -191,7 +235,7 @@ public class LDNetTraceRoute{
     			process.destroy();
     		} catch (Exception e) {}
     	}
-    	
+
     	this.listener.OnNetTraceFinished();
     }
 
@@ -240,11 +284,11 @@ public class LDNetTraceRoute{
 		public String getHost() {
 		    return host;
 		}
-	
+
 		public int getHop() {
 		    return hop;
 		}
-	
+
 		public void setHop(int hop) {
 		    this.hop = hop;
 		}
