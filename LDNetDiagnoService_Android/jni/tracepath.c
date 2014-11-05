@@ -344,7 +344,7 @@ int probe_ttl(int fd, int ttl)
 	memset(pktbuf, 0, mtu);
 restart:
 	//尝试在发送不成功的情况下连续发送10次
-	for (i=0; i<10; i++) {
+	for (i=0; i<2; i++) {
 		int res;
 
 		hdr->ttl = ttl;
@@ -363,7 +363,7 @@ restart:
 	}
 	hisptr = (hisptr + 1)&63;
 
-	if (i<10) {
+	if (i<2) {
 		data_wait(fd);
 		if (recv(fd, pktbuf, mtu, MSG_DONTWAIT) > 0) {
 			printf("%2d?: reply received 8)\n", ttl);
@@ -519,7 +519,7 @@ mainTracePath(int argc, char **argv)
 
 restart:
 		//每一条尝试三次发送
-		for (i=0; i<3; i++) {
+		for (i=0; i<1; i++) {
 			int old_mtu;
 
 			old_mtu = mtu;
