@@ -3,7 +3,15 @@
 
 >
 * 利用ping和traceroute的原理，对指定域名（通常为后台API的提供域名）进行网络诊断，并收集诊断日志。功能通过Service的方式提供给各个产品项目，由各个项目组决定如何使用。
-* Android的实现方案是通过后台线程执行ping命令的方式模拟traceroute的过程，缺点就是模拟过程较慢，timeout的出现比较频繁(拟通过编译C代码的方式进行改进)；
+
+
+
+* Android的实现方案一: 
+> 是通过后台线程执行ping命令的方式模拟traceroute的过程，缺点就是模拟过程较慢，timeout的出现比较频繁
+
+ 
+* Android的实现方案二: 
+>通过编译开源网络检测库[iputils](http://www.linuxfoundation.org/collaborate/workgroups/networking/iputils)C代码的方式对traceroute进行了套接字发送ICMP报文模拟，可以明显提高检测速度；（关于iputils工具原理实现，请参考[博文](http://blog.csdn.net/fsdev/article/category/1212445)）
 
 
 
@@ -94,6 +102,17 @@
 				_netDiagnoService = null;
 				isRunning = false;
 			} 
+
+3. 关于service选择traceroute 方式的说明：默认是支持JNICTrace，如果需要通过ping命令行方式执行，可以通过_netDiagnoService.setIfUseJNICTrace(false)设置;
+
+		...
+			
+		_netDiagnoService = new LDNetDiagnoService();
+		
+		//设置是否使用JNIC 完成traceroute
+		this._netDiagnoService.setIfUseJNICTrace(false);
+		
+		...
 
 
 ## 技术支持
