@@ -66,11 +66,13 @@ public class MainActivity extends Activity implements OnClickListener, LDNetDiag
 				progress.setVisibility(View.VISIBLE);
 				text.setText("Traceroute with max 30 hops...");
 				btn.setText("停止诊断");
+				btn.setEnabled(false);
 			} else {
 				progress.setVisibility(View.GONE);
 				btn.setText("开始诊断");
 				_netDiagnoService.cancel(true);
 				_netDiagnoService = null;
+				btn.setEnabled(true);
 			}
 
 			isRunning = !isRunning;
@@ -83,6 +85,7 @@ public class MainActivity extends Activity implements OnClickListener, LDNetDiag
 		text.setText(log);
 		progress.setVisibility(View.GONE);
 		btn.setText("开始诊断");
+		btn.setEnabled(true);
 		_netDiagnoService = null;
 		isRunning = false;
 	}
