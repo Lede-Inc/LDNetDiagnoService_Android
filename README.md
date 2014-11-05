@@ -83,6 +83,7 @@
 			}	
 
 
+
 2. 重载LDNetDiagnoListener方法，监控网络诊断日志；
 
 	* 监控网络诊断过程中的日志输出
@@ -102,6 +103,9 @@
 				_netDiagnoService = null;
 				isRunning = false;
 			} 
+
+
+
 
 3. 关于service选择traceroute 方式的说明：默认是支持JNICTrace，如果需要通过ping命令行方式执行，可以通过_netDiagnoService.setIfUseJNICTrace(false)设置;
 
