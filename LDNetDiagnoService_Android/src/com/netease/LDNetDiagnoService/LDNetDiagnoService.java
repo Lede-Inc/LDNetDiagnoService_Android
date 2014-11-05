@@ -40,6 +40,7 @@ public class LDNetDiagnoService extends LDNetAsyncTaskEx<String, String, String>
 	private boolean _isRunning;
 
 	private LDNetDiagnoListener _netDiagnolistener; //将监控日志上报到前段页面
+	private boolean _isUseJNICTrace = true;
 
 
 	public LDNetDiagnoService(){
@@ -165,6 +166,7 @@ public class LDNetDiagnoService extends LDNetAsyncTaskEx<String, String, String>
 	    recordStepInfo("\n开始traceroute...");
     	_traceRouter = LDNetTraceRoute.getInstance();
     	_traceRouter.initListenter(this);
+    	_traceRouter.isCTrace = this._isUseJNICTrace;
     	_traceRouter.startTraceRoute(_dormain);
 
 	    return _logInfo.toString();
@@ -185,6 +187,14 @@ public class LDNetDiagnoService extends LDNetAsyncTaskEx<String, String, String>
 	        }
 	        _isRunning = false;
 	    }
+	}
+
+	/**
+	 * 设置是否需要JNICTraceRoute
+	 * @param use
+	 */
+	public void setIfUseJNICTrace(boolean use){
+		this._isUseJNICTrace = use;
 	}
 
 

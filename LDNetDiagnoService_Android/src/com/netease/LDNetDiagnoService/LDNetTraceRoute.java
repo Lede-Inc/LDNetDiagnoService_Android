@@ -28,7 +28,7 @@ public class LDNetTraceRoute{
 
 
     LDNetTraceRouteListener listener;
-    public final boolean isCTrace = true;
+    public boolean isCTrace = true;
 
     public void initListenter(LDNetTraceRouteListener listener) {
     	this.listener = listener;

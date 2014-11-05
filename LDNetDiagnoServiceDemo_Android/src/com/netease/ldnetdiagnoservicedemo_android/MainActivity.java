@@ -62,6 +62,8 @@ public class MainActivity extends Activity implements OnClickListener, LDNetDiag
 						"testDemo", "网络诊断应用", "1.0.0",
 						"huipang@corp.netease.com",  "deviceID(option)", "caipiao.163.com",
 						"carriname", "ISOCountyCode", "MobilCountryCode", "MobileNetCode", this);
+				//设置是否使用JNIC 完成traceroute
+				this._netDiagnoService.setIfUseJNICTrace(true);
 				_netDiagnoService.execute();
 				progress.setVisibility(View.VISIBLE);
 				text.setText("Traceroute with max 30 hops...");
