@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 import android.util.Log;
 
-import com.netease.LDNetDiagnoUtils.PingParse;
+import com.netease.LDNetDiagnoUtils.LDPingParse;
 
 /**
  * 直接通过ping命令监测网络
@@ -94,7 +94,7 @@ public class LDNetPing {
         log.append("timeout");
       }
     }
-    String logStr = PingParse.getFormattingStr(host, log.toString());
+    String logStr = LDPingParse.getFormattingStr(host, log.toString());
     this.listener.OnNetPingFinished(logStr);
   }
 

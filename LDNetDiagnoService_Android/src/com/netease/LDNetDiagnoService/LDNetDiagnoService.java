@@ -209,30 +209,25 @@ public class LDNetDiagnoService extends
   public String startNetDiagnosis() {
     if (this._dormain == null || this._dormain.equalsIgnoreCase(""))
       return "";
-
     this._isRunning = true;
     this._logInfo.setLength(0);
     recordStepInfo("开始诊断...");
     recordCurrentAppVersion();
     if (_isNetConnected) {
+
       // TCP三次握手时间测试
       recordStepInfo("\n开始TCP连接测试...");
-      _netSocker =LDNetSocket.getInstance(); 
-      _netSocker._remoteInet=_remoteInet; 
-      _netSocker._remoteIpList=_remoteIpList;
+      _netSocker = LDNetSocket.getInstance();
+      _netSocker._remoteInet = _remoteInet;
+      _netSocker._remoteIpList = _remoteIpList;
       _netSocker.initListener(this);
       _netSocker.isCConn = this._isUseJNICConn;// 设置是否启用C进行connected
       _isSocketConnected = _netSocker.exec(_dormain);
 
       // 诊断ping信息, 同步过程
-      recordStepInfo("\n开始ping...");
-      _netPinger = new LDNetPing(this, 4);
-      if (_isNetConnected && _isDomainParseOk && _isSocketConnected) {// 联网&&DNS解析成功&&connect测试成功
-        for (String _remoteIp : _remoteIpList) {
-          recordStepInfo("ping..." + _remoteIp);
-          _netPinger.exec(_dormain);
-        }
-      } else {
+      if (!(_isNetConnected && _isDomainParseOk && _isSocketConnected)) {// 联网&&DNS解析成功&&connect测试成功
+        recordStepInfo("\n开始ping...");
+        _netPinger = new LDNetPing(this, 4);
         recordStepInfo("ping...127.0.0.1");
         _netPinger.exec("127.0.0.1");
         recordStepInfo("ping本机IP..." + _localIp);
@@ -245,13 +240,8 @@ public class LDNetDiagnoService extends
         _netPinger.exec(_dns1);
         recordStepInfo("ping本地DNS2..." + _dns2);
         _netPinger.exec(_dns2);
-        if (_remoteIpList != null) {
-          for (String _remoteIp : _remoteIpList) {
-            recordStepInfo("ping..." + _remoteIp);
-            _netPinger.exec(_dormain);
-          }
-        }
       }
+
       // 开始诊断traceRoute
       recordStepInfo("\n开始traceroute...");
       _traceRouter = LDNetTraceRoute.getInstance();
@@ -288,7 +278,7 @@ public class LDNetDiagnoService extends
    * @param use
    */
   public void setIfUseJNICConn(boolean use) {
-    this._isUseJNICConn = use; 
+    this._isUseJNICConn = use;
   }
 
   /**
@@ -366,7 +356,7 @@ public class LDNetDiagnoService extends
     String useTime = (String) map.get("useTime");
     _remoteInet = (InetAddress[]) map.get("remoteInet");
     String timeShow = null;
-    if (Integer.parseInt(useTime) > 1000) {// 如果大于1000ms，则换用s来显示
+    if (Integer.parseInt(useTime) > 5000) {// 如果大于1000ms，则换用s来显示
       timeShow = " (" + Integer.parseInt(useTime) / 1000 + "s)";
     } else {
       timeShow = " (" + useTime + "ms)";
@@ -385,7 +375,7 @@ public class LDNetDiagnoService extends
         map = LDNetUtil.getDomainIp(_dormain);
         useTime = (String) map.get("useTime");
         _remoteInet = (InetAddress[]) map.get("remoteInet");
-        if (Integer.parseInt(useTime) > 1000) {// 如果大于1000ms，则换用s来显示
+        if (Integer.parseInt(useTime) > 5000) {// 如果大于1000ms，则换用s来显示
           timeShow = " (" + Integer.parseInt(useTime) / 1000 + "s)";
         } else {
           timeShow = " (" + useTime + "ms)";

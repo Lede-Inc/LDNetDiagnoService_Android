@@ -1,6 +1,5 @@
 package com.netease.ldnetdiagnoservicedemo_android;
 
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.InputType;
@@ -29,13 +28,13 @@ public class MainActivity extends Activity implements OnClickListener,
     super.onCreate(savedInstanceState);
 
     setContentView(R.layout.activity_main);
-    btn = (Button) findViewById(R.id.btn); 
+    btn = (Button) findViewById(R.id.btn);
     btn.setOnClickListener(this);
     progress = (ProgressBar) findViewById(R.id.progress);
     progress.setVisibility(View.INVISIBLE);
     text = (TextView) findViewById(R.id.text);
     edit = (EditText) findViewById(R.id.domainName);
-
+    edit.clearFocus();
   }
 
   @Override
