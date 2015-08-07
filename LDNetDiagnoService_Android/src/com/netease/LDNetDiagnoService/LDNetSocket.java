@@ -44,14 +44,14 @@ public class LDNetSocket {
    */
   public boolean exec(String host) {
 	//isCConn = true;
-	Log.i("LDNetSocket", "==============isCConn"+isCConn);
-	Log.i("LDNetSocket","===============loaded"+loaded);
+	//Log.i("LDNetSocket", "==============isCConn"+isCConn);
+	//Log.i("LDNetSocket","===============loaded"+loaded);
     if (isCConn && loaded) {
-    	Log.i("LDNetSocket","================loaded");
+    	//Log.i("LDNetSocket","================loaded");
     	startJNITelnet(host, "80"); //默认80端口
     	return true;
     } else {
-    	Log.i("LDNetSocket", "===============unload");
+    	//Log.i("LDNetSocket", "===============unload");
       return execUseJava(host);
     }
   }
