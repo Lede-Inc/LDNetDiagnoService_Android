@@ -24,6 +24,7 @@ int InitProvider() {
 
 	if(TestProvider == NULL) {
 		TestProvider = (*jniEnv)->FindClass(jniEnv,"com/netease/LDNetDiagnoService/LDNetTraceRoute");
+		//TestProvider = jniEnv->NewGlobalRef(myClass)
 		if(TestProvider == NULL){
 			return -1;
 		}
@@ -94,8 +95,8 @@ int InitSocketInfo() {
 	}
 
 	if (printSocketInfo == NULL) {
-		printSocketInfo = (*jniEnvTelnet)->GetMethodID(jniEnvTelnet, _LDNetSocket, "printTraceInfo","(Ljava/lang/String;)V");
-		if (printTraceInfo == NULL) {
+		printSocketInfo = (*jniEnvTelnet)->GetMethodID(jniEnvTelnet, _LDNetSocket, "printSocketInfo","(Ljava/lang/String;)V");
+		if (printSocketInfo == NULL) {
 			(*jniEnvTelnet)->DeleteLocalRef(jniEnvTelnet, _LDNetSocket);
 			(*jniEnvTelnet)->DeleteLocalRef(jniEnvTelnet, _mLDNetSocket);
 			return -2;
@@ -126,7 +127,7 @@ void PrintSocketInfo(const char *aStrToPrint){
 	//jstrMSG =(*jniEnv)->NewStringUTF(jniEnv, "Hi,I'm From C");
 	jstrMSG =(*jniEnvTelnet)->NewStringUTF(jniEnvTelnet, aStrToPrint);
 	(*jniEnvTelnet)->CallVoidMethod(jniEnvTelnet, _mLDNetSocket, printSocketInfo,jstrMSG);
-	(*jniEnvTelnet)->DeleteLocalRef(jniEnvTelnet, jstrMSG);
+	//(*jniEnvTelnet)->DeleteLocalRef(jniEnvTelnet, jstrMSG);
 }
 
 /**

@@ -43,10 +43,12 @@ public class LDNetSocket {
    * 通过connect函数测试TCP的RTT时延
    */
   public boolean exec(String host) {
-	  isCConn = true;
-    if (isCConn&&loaded) {
+	//isCConn = true;
+	Log.i("LDNetSocket", "==============isCConn"+isCConn);
+	Log.i("LDNetSocket","===============loaded"+loaded);
+    if (isCConn && loaded) {
     	Log.i("LDNetSocket","================loaded");
-    	startJNITelnet(host, "80");
+    	startJNITelnet(host, "80"); //默认80端口
     	return true;
     } else {
     	Log.i("LDNetSocket", "===============unload");
@@ -178,7 +180,8 @@ public class LDNetSocket {
   static {
     try {
       System.loadLibrary("tracepath");
-      Log.i("LDNetSocket", "===========loaded =true");
+     // Log.i("LDNetSocket", "===========loaded =true");
+      loaded = true;
     } catch (UnsatisfiedLinkError e) {
       e.printStackTrace();
     } catch (Exception e) {

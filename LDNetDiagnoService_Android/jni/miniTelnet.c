@@ -178,7 +178,7 @@ int mainConnect (int argc, char* argv[])
 		return 0;
 	}
     for(iter = 0; server->h_addr_list[iter]; iter++) {
-       // printf("%s\t", inet_ntoa(*(struct in_addr*)(server->h_addr_list[iter])));
+        //Lprintf("%s\t", inet_ntoa(*(struct in_addr*)(server->h_addr_list[iter])));
     	char* maddr =  inet_ntoa(*(struct in_addr*)(server->h_addr_list[iter]));
         serv_addr.sin_addr.s_addr = inet_addr(maddr);
         connectHost(serv_addr);
