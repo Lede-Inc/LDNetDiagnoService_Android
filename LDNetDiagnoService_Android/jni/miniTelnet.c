@@ -11,30 +11,47 @@
 #include <net/if.h>
 #include <time.h>
 #include <stdarg.h>
-#include "com_netease_LDNetDiagnoService_LDNetTraceTelnet.h"
+#include "com_netease_LDNetDiagnoService_LDNetSocket.h"
 #include "Provider.h"
 #define OUT_LEN 1000
 
-JNIEnv* jniEnv;
-int isFirst;
+JNIEnv* jniEnvTelnet;
+int isFirstTelnet;
 extern char* jstringTostring(JNIEnv* env, jstring jstr);
-extern int printf(const char *fmt, ...);
-
-JNIEXPORT void JNICALL Java_com_netease_LDNetDiagnoService_LDNetTraceTelnet_startJNICTelnet(JNIEnv *env, jobject obj, jstring command, jstring port){
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNICTelnet begin...." );
-	if(jniEnv == NULL) {
-		jniEnv = env;
+int Lprintf(const char *fmt, ...);
+JNIEXPORT void JNICALL Java_com_netease_LDNetDiagnoService_LDNetSocket_startJNITelnet(JNIEnv *env, jobject obj, jstring command, jstring port){
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNITelnet begin...." );
+	if(jniEnvTelnet == NULL) {
+		jniEnvTelnet = env;
 	}
 
-	isFirst = 1;
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNICTelnet c_command begin...." );
+	isFirstTelnet = 1;
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNITelnet c_command begin...." );
 	char* c_command = jstringTostring(env, command);
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNICTelnet c_command end...." );
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNICTelnet c_port begin...." );
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNITelnet c_command end...." );
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNITelnet c_port begin...." );
 	char* c_port = jstringTostring(env, port);
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNICTelnet c_port end...." );
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNITelnet c_port end...." );
 	char* argv[]={"connect", c_command, c_port};
 	mainConnect(3, argv);
+}
+
+/**
+ * 閲嶈浇printf鍑芥暟锛屽皢traceroute鐨勭粨鏋滈�氳繃PrintTraceInfo杩斿洖鍒癹ava鐜
+ */
+int Lprintf(const char *fmt, ...){
+	va_list argptr;
+	int cnt;
+	va_start(argptr, fmt);
+	char *buffer = (char *)malloc(OUT_LEN);
+	memset(buffer, OUT_LEN, 0);
+	cnt = vsnprintf(buffer, OUT_LEN, fmt, argptr);
+	buffer[cnt] = '\0';
+	PrintSocketInfo(buffer);
+	free(buffer);
+	va_end(argptr);
+	isFirstTelnet++;
+	return 1;
 }
 
 char* GetLocalIp()
@@ -66,78 +83,106 @@ char* GetLocalIp()
         return ip;
     }
 }
+//
+//void connectHost(struct hostent *server, int portno)
+//{
+//	int sockfd;
+//	struct sockaddr_in serv_addr;
+//	//struct hostent *server;
+//	//char buffer[256];
+//	//char hname[128];
+//
+//	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+//	if (sockfd < 0)
+//	{
+//		printf("connect to host failed. ERROR opening socket\n");
+//		return;
+//	}
+//
+//	memset(&serv_addr, 0, sizeof(serv_addr));
+//
+//	serv_addr.sin_family = AF_INET;
+//	bcopy((char *)server->h_addr, (char *)(&serv_addr.sin_addr.s_addr),
+//	      server->h_length);
+//	serv_addr.sin_port = htons(portno);
+//
+//	time_t begin, end;
+//	begin = clock();
+//	if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+//	{
+//		printf("connect to host failed");
+//		return ;
+//	}
+//	end = clock();
+//	printf("connect to host...success.  %.5f ms", (double)(end-begin)/CLOCKS_PER_SEC *1000 );
+//
+//	close(sockfd);
+//}
 
-void connectHost(struct hostent *server, int portno)
+void connectHost(struct sockaddr_in serv_addr)
 {
 	int sockfd;
-	struct sockaddr_in serv_addr;
-	//struct hostent *server;
-	//char buffer[256];
-	//char hname[128];
-
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	if (sockfd < 0)
-	{
-		printf("connect to host failed. ERROR opening socket\n");
-		return;
-	}
-
-	memset(&serv_addr, 0, sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	bcopy((char *)server->h_addr, (char *)(&serv_addr.sin_addr.s_addr),
-	      server->h_length);
-	serv_addr.sin_port = htons(portno);
-
 	time_t begin, end;
-	begin = clock();
-	if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+	int iter;
+	double avg =0;
+	double ttime[4] ={0};
+	for(iter =0; iter<4; iter++)
 	{
-		printf("connect to host failed");
-		return ;
+		sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		if (sockfd < 0)
+		{
+			Lprintf("connect to host failed. ERROR opening socket\n");
+			return;
+		}
+
+		begin = clock();
+		if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+		{
+			Lprintf("connect to host failed\n");
+			return ;
+		}
+		end = clock();
+		ttime[iter]=(double)(end-begin)/CLOCKS_PER_SEC *1000;
+		avg+=ttime[iter];
+		close(sockfd);
 	}
-	end = clock();
-	printf("connect to host...success.  %.5f ms", (double)(end-begin)/CLOCKS_PER_SEC *1000 );
-
-	close(sockfd);
+	avg /= 4;
+	Lprintf("connect to host %s\n", inet_ntoa(serv_addr.sin_addr));
+	Lprintf("1's time:%.0fms, 2's time:%.0fms, 3'time:%.0fms, 4's time:%.0fms, avg time:%.0fms\n",ttime[0],ttime[1],ttime[2],ttime[3],avg);
 }
-
 
 int mainConnect (int argc, char* argv[])
 {
 	int portno;
 	struct hostent *server;
 	int iter;
+	struct sockaddr_in serv_addr;
 
 	if (argc < 3)
 	{
 		//printf( "usage %s hostname port\n", argv[0]);
-		printf("connect to host failed, argument mismatch");
+		Lprintf("connect to host failed, argument mismatch\n");
 		return 0;
 	}
 	
-	/*获取本机ip地址*/
-	printf("local host IP: %s", GetLocalIp());
+	/*鎵撳嵃鏈湴ip鍦板潃*/
+	//printf("local host IP: %s", GetLocalIp());
+	bzero((char *) &serv_addr, sizeof(serv_addr));
 	portno = atoi(argv[2]);
-	/*打印远程主机的ip*/
-	printf("\nremote host ip: ");
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(portno);
 	server = gethostbyname(argv[1]);
 	if (server == NULL)
 	{
-		printf("\n connect to host failed, gethostbyname return null \n");
+		Lprintf("\n connect to host failed, gethostbyname return null \n");
 		return 0;
 	}
     for(iter = 0; server->h_addr_list[iter]; iter++) {
-        printf("%s\t", inet_ntoa(*(struct in_addr*)(server->h_addr_list[iter])));
+       // printf("%s\t", inet_ntoa(*(struct in_addr*)(server->h_addr_list[iter])));
+    	char* maddr =  inet_ntoa(*(struct in_addr*)(server->h_addr_list[iter]));
+        serv_addr.sin_addr.s_addr = inet_addr(maddr);
+        connectHost(serv_addr);
     }
-
-    printf("\nstart connect... ");
-    for(iter=0; iter<3; iter++)
-    {
-    	printf("\n%d's try,", iter+1);
-        connectHost(server, portno);
-    }
-    printf(" ************ \n\n\n");
-
 	return 0;
 }
 

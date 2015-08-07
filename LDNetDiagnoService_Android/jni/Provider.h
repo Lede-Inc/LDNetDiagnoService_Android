@@ -3,3 +3,5 @@
 #include <android/log.h>
 
 void PrintTraceInfo(const char *aStrToPrint);
+
+void PrintSocketInfo(const char *aStrToPrint);
