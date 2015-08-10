@@ -48,7 +48,6 @@ public class MainActivity extends Activity implements OnClickListener,
             "deviceID(option)", domainName, "carriname", "ISOCountyCode",
             "MobilCountryCode", "MobileNetCode", this);
         // 设置是否使用JNIC 完成traceroute
-        _netDiagnoService.setIfUseJNICConn(true);
         _netDiagnoService.setIfUseJNICTrace(true);
         _netDiagnoService.execute();
         progress.setVisibility(View.VISIBLE);
