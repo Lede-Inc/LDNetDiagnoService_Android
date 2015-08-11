@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import android.content.Context;
 import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.netease.LDNetDiagnoService.LDNetPing.LDNetPingListener;
@@ -141,7 +142,7 @@ public class LDNetDiagnoService extends
    * 开始诊断网络
    */
   public String startNetDiagnosis() {
-    if (this._dormain == null || this._dormain.equalsIgnoreCase(""))
+    if (TextUtils.isEmpty(this._dormain))
       return "";
     this._isRunning = true;
     this._logInfo.setLength(0);
@@ -294,23 +295,23 @@ public class LDNetDiagnoService extends
     recordStepInfo("机器类型:\t" + android.os.Build.MANUFACTURER + ":"
         + android.os.Build.BRAND + ":" + android.os.Build.MODEL);
     recordStepInfo("系统版本:\t" + android.os.Build.VERSION.RELEASE);
-    if(_deviceID == null || _deviceID.equalsIgnoreCase("")){
+    if(_telManager!=null&&TextUtils.isEmpty(_deviceID)){
     		_deviceID = _telManager.getDeviceId();
     }
     recordStepInfo("机器ID:\t" + _deviceID);
 
     // 运营商信息
-    if(_carrierName == null || _carrierName.equalsIgnoreCase("")){
+    if(TextUtils.isEmpty(_carrierName)){
 	    _carrierName = LDNetUtil.getMobileOperator(_context);
     }
     recordStepInfo("运营商:\t" + _carrierName);
 
-    if(_ISOCountryCode == null || _ISOCountryCode.equalsIgnoreCase("")){
+    if(_telManager!=null&&TextUtils.isEmpty(_ISOCountryCode)){
     		_ISOCountryCode = _telManager.getNetworkCountryIso();
     }
     recordStepInfo("ISOCountryCode:\t" + _ISOCountryCode);
 
-    if(_MobileCountryCode == null || _MobileCountryCode.equalsIgnoreCase("")){
+    if(_telManager!=null&&TextUtils.isEmpty(_MobileCountryCode)){
 	    String tmp = _telManager.getNetworkOperator();
 	    	_MobileCountryCode = tmp.substring(0, 3);
 	    if (tmp.length() >= 5) {
