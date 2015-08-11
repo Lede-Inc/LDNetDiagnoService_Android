@@ -72,6 +72,8 @@ public class LDNetUtil {
   public static String getMobileOperator(Context context) {
     TelephonyManager telManager = (TelephonyManager) context
         .getSystemService(Context.TELEPHONY_SERVICE);
+    if(telManager==null)
+    	return "未知运营商";
     String operator = telManager.getSimOperator();
     if (operator != null) {
       if (operator.equals("46000") || operator.equals("46002")
