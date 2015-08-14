@@ -34,6 +34,9 @@ public class LDNetUtil {
     String mNetWorkType = null;
     ConnectivityManager manager = (ConnectivityManager) context
         .getSystemService(Context.CONNECTIVITY_SERVICE);
+    if (manager == null) {
+      return "ConnectivityManager not found";
+    }
     NetworkInfo networkInfo = manager.getActiveNetworkInfo();
     if (networkInfo != null && networkInfo.isConnected()) {
       String type = networkInfo.getTypeName();
@@ -94,7 +97,13 @@ public class LDNetUtil {
   public static String getLocalIpByWifi(Context context) {
     WifiManager wifiManager = (WifiManager) context
         .getSystemService(Context.WIFI_SERVICE);
+    if (wifiManager == null) {
+      return "wifiManager not found";
+    }
     WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+    if (wifiInfo == null) {
+      return "wifiInfo not found";
+    }
     int ipAddress = wifiInfo.getIpAddress();
     return String.format("%d.%d.%d.%d", (ipAddress & 0xff),
         (ipAddress >> 8 & 0xff), (ipAddress >> 16 & 0xff),
@@ -133,9 +142,11 @@ public class LDNetUtil {
     String gateWay = null;
     WifiManager wifiManager = (WifiManager) context
         .getSystemService(Context.WIFI_SERVICE);
+    if (wifiManager == null) {
+      return "wifiManager not found";
+    }
     DhcpInfo dhcpInfo = wifiManager.getDhcpInfo();
     if (dhcpInfo != null) {
-
       int tmp = dhcpInfo.gateway;
       gateWay = String.format("%d.%d.%d.%d", (tmp & 0xff), (tmp >> 8 & 0xff),
           (tmp >> 16 & 0xff), (tmp >> 24 & 0xff));
@@ -181,7 +192,6 @@ public class LDNetUtil {
    */
   public static Map<String, Object> getDomainIp(String _dormain) {
     Map<String, Object> map = new HashMap<String, Object>();
-    Log.i("LDNetUtil", "getDomainIp");
     long start = 0;
     long end = 0;
     String time = null;
@@ -208,6 +218,9 @@ public class LDNetUtil {
   private static String mobileNetworkType(Context context) {
     TelephonyManager telephonyManager = (TelephonyManager) context
         .getSystemService(Context.TELEPHONY_SERVICE);
+    if (telephonyManager == null) {
+      return "TM==null";
+    }
     switch (telephonyManager.getNetworkType()) {
     case TelephonyManager.NETWORK_TYPE_1xRTT:// ~ 50-100 kbps
       return "2G";

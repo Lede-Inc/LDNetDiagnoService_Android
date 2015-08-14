@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import android.content.Context;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.netease.LDNetDiagnoService.LDNetPing.LDNetPingListener;
 import com.netease.LDNetDiagnoService.LDNetSocket.LDNetSocketListener;
@@ -137,7 +136,6 @@ public class LDNetDiagnoService extends
     this.stopNetDialogsis();
   }
 
-
   /**
    * 开始诊断网络
    */
@@ -219,7 +217,7 @@ public class LDNetDiagnoService extends
 
   /**
    * 设置是否需要JNICTraceRoute
-   *
+   * 
    * @param use
    */
   public void setIfUseJNICTrace(boolean use) {
@@ -252,7 +250,10 @@ public class LDNetDiagnoService extends
 
   @Override
   public void OnNetTraceUpdated(String log) {
-    if (this._traceRouter.isCTrace) {
+    if (log == null) {
+      return;
+    }
+    if (this._traceRouter != null && this._traceRouter.isCTrace) {
       if (log.contains("ms") || log.contains("***")) {
         log += "\n";
       }
@@ -425,7 +426,6 @@ public class LDNetDiagnoService extends
         recordStepInfo("DNS解析结果:\t" + "解析失败" + timeShow);
       }
     }
-    Log.i("LDNetDiagnoService", flag + "xxx");
     return flag;
   }
 
@@ -437,12 +437,12 @@ public class LDNetDiagnoService extends
     this.recordStepInfo(log);
   }
 
-  private static final int CORE_POOL_SIZE = 4;
-  private static final int MAXIMUM_POOL_SIZE = 10;
-  private static final int KEEP_ALIVE = 10;
+  private static final int CORE_POOL_SIZE = 15;// 4
+  private static final int MAXIMUM_POOL_SIZE = 30;// 10
+  private static final int KEEP_ALIVE = 30;// 10
 
   private static final BlockingQueue<Runnable> sWorkQueue = new LinkedBlockingQueue<Runnable>(
-      2);
+      20);// 2
   private static final ThreadFactory sThreadFactory = new ThreadFactory() {
     private final AtomicInteger mCount = new AtomicInteger(1);
 
