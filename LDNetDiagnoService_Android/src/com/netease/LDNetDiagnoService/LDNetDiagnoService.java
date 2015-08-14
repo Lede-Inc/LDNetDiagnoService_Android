@@ -60,7 +60,7 @@ public class LDNetDiagnoService extends
   private LDNetDiagnoListener _netDiagnolistener; // 将监控日志上报到前段页面
   private boolean _isUseJNICConn = false;
   private boolean _isUseJNICTrace = true;
-  private TelephonyManager _telManager = null; //用于获取网络基本信息
+  private TelephonyManager _telManager = null; // 用于获取网络基本信息
 
   public LDNetDiagnoService() {
     super();
@@ -68,7 +68,7 @@ public class LDNetDiagnoService extends
 
   /**
    * 初始化网络诊断服务
-   *
+   * 
    * @param theAppCode
    * @param theDeviceID
    * @param theUID
@@ -96,7 +96,10 @@ public class LDNetDiagnoService extends
     this._isRunning = false;
     _remoteIpList = new ArrayList<String>();
     _telManager = (TelephonyManager) context
-            .getSystemService(Context.TELEPHONY_SERVICE);
+        .getSystemService(Context.TELEPHONY_SERVICE);
+    sExecutor = new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
+        KEEP_ALIVE, TimeUnit.SECONDS, sWorkQueue, sThreadFactory);
+
   }
 
   @Override
@@ -175,7 +178,6 @@ public class LDNetDiagnoService extends
         recordStepInfo("ping本地DNS2..." + _dns2);
         _netPinger.exec(_dns2);
       }
-
       // 开始诊断traceRoute
       recordStepInfo("\n开始traceroute...");
       _traceRouter = LDNetTraceRoute.getInstance();
@@ -194,21 +196,30 @@ public class LDNetDiagnoService extends
    */
   public void stopNetDialogsis() {
     if (_isRunning) {
+      if (_netSocker != null) {
+        _netSocker.resetInstance();
+        _netSocker = null;
+      }
+
       if (_netPinger != null) {
         _netPinger = null;
       }
-
       if (_traceRouter != null) {
         _traceRouter.resetInstance();
         _traceRouter = null;
       }
+      if (!sExecutor.isShutdown()) {
+        sExecutor.shutdown();
+        sExecutor = null;
+      }
+
       _isRunning = false;
     }
   }
 
   /**
    * 设置是否需要JNICTraceRoute
-   *
+   * 
    * @param use
    */
   public void setIfUseJNICConn(boolean use) {
@@ -233,7 +244,7 @@ public class LDNetDiagnoService extends
 
   /**
    * 如果调用者实现了stepInfo接口，输出信息
-   *
+   * 
    * @param stepInfo
    */
   private void recordStepInfo(String stepInfo) {
@@ -296,28 +307,28 @@ public class LDNetDiagnoService extends
     recordStepInfo("机器类型:\t" + android.os.Build.MANUFACTURER + ":"
         + android.os.Build.BRAND + ":" + android.os.Build.MODEL);
     recordStepInfo("系统版本:\t" + android.os.Build.VERSION.RELEASE);
-    if(_telManager!=null&&TextUtils.isEmpty(_deviceID)){
-    		_deviceID = _telManager.getDeviceId();
+    if (_telManager != null && TextUtils.isEmpty(_deviceID)) {
+      _deviceID = _telManager.getDeviceId();
     }
     recordStepInfo("机器ID:\t" + _deviceID);
 
     // 运营商信息
-    if(TextUtils.isEmpty(_carrierName)){
-	    _carrierName = LDNetUtil.getMobileOperator(_context);
+    if (TextUtils.isEmpty(_carrierName)) {
+      _carrierName = LDNetUtil.getMobileOperator(_context);
     }
     recordStepInfo("运营商:\t" + _carrierName);
 
-    if(_telManager!=null&&TextUtils.isEmpty(_ISOCountryCode)){
-    		_ISOCountryCode = _telManager.getNetworkCountryIso();
+    if (_telManager != null && TextUtils.isEmpty(_ISOCountryCode)) {
+      _ISOCountryCode = _telManager.getNetworkCountryIso();
     }
     recordStepInfo("ISOCountryCode:\t" + _ISOCountryCode);
 
-    if(_telManager!=null&&TextUtils.isEmpty(_MobileCountryCode)){
-	    String tmp = _telManager.getNetworkOperator();
-	    	_MobileCountryCode = tmp.substring(0, 3);
-	    if (tmp.length() >= 5) {
-    			_MobileNetCode = tmp.substring(3, 5);
-	    }
+    if (_telManager != null && TextUtils.isEmpty(_MobileCountryCode)) {
+      String tmp = _telManager.getNetworkOperator();
+      _MobileCountryCode = tmp.substring(0, 3);
+      if (tmp.length() >= 5) {
+        _MobileNetCode = tmp.substring(3, 5);
+      }
     }
     recordStepInfo("MobileCountryCode:\t" + _MobileCountryCode);
     recordStepInfo("MobileNetworkCode:\t" + _MobileNetCode);
@@ -326,54 +337,53 @@ public class LDNetDiagnoService extends
   /**
    * 输出本地网络环境信息
    */
-  private void recordLocalNetEnvironmentInfo(){
-	recordStepInfo("\n诊断域名 " + _dormain + "...");
+  private void recordLocalNetEnvironmentInfo() {
+    recordStepInfo("\n诊断域名 " + _dormain + "...");
 
-	// 网络状态
-	if (LDNetUtil.isNetworkConnected(_context)) {
-	  _isNetConnected = true;
-	  recordStepInfo("当前是否联网:\t" + "已联网");
-	} else {
-	  _isNetConnected = false;
-	  recordStepInfo("当前是否联网:\t" + "未联网");
-	}
+    // 网络状态
+    if (LDNetUtil.isNetworkConnected(_context)) {
+      _isNetConnected = true;
+      recordStepInfo("当前是否联网:\t" + "已联网");
+    } else {
+      _isNetConnected = false;
+      recordStepInfo("当前是否联网:\t" + "未联网");
+    }
 
-	//获取当前网络类型
-	_netType = LDNetUtil.getNetWorkType(_context);
-	recordStepInfo("当前联网类型:\t" + _netType);
+    // 获取当前网络类型
+    _netType = LDNetUtil.getNetWorkType(_context);
+    recordStepInfo("当前联网类型:\t" + _netType);
 
-	//wifi：获取本地ip和网关，其他类型：只获取ip
-	if (LDNetUtil.NETWORKTYPE_WIFI.equals(_netType)) {
-	  _localIp = LDNetUtil.getLocalIpByWifi(_context);
-	  _gateWay = LDNetUtil.pingGateWayInWifi(_context);
-	} else {
-	  _localIp = LDNetUtil.getLocalIpBy3G();
-	}
-	if (_isNetConnected) {
-	  recordStepInfo("本地IP:\t" + _localIp);
-	} else {
-	  recordStepInfo("本地IP:\t" + "127.0.0.1");
-	}
-	if (_gateWay != null) {
-	  recordStepInfo("本地网关:\t" + this._gateWay);
-	}
+    // wifi：获取本地ip和网关，其他类型：只获取ip
+    if (LDNetUtil.NETWORKTYPE_WIFI.equals(_netType)) {
+      _localIp = LDNetUtil.getLocalIpByWifi(_context);
+      _gateWay = LDNetUtil.pingGateWayInWifi(_context);
+    } else {
+      _localIp = LDNetUtil.getLocalIpBy3G();
+    }
+    if (_isNetConnected) {
+      recordStepInfo("本地IP:\t" + _localIp);
+    } else {
+      recordStepInfo("本地IP:\t" + "127.0.0.1");
+    }
+    if (_gateWay != null) {
+      recordStepInfo("本地网关:\t" + this._gateWay);
+    }
 
-	//获取本地DNS地址
-	if (_isNetConnected) {
-	  _dns1 = LDNetUtil.getLocalDns("dns1");
-	  _dns2 = LDNetUtil.getLocalDns("dns2");
-	  recordStepInfo("本地DNS:\t" + this._dns1 + "," + this._dns2);
-	} else {
-	  recordStepInfo("本地DNS:\t" + "0.0.0.0" + "," + "0.0.0.0");
-	}
+    // 获取本地DNS地址
+    if (_isNetConnected) {
+      _dns1 = LDNetUtil.getLocalDns("dns1");
+      _dns2 = LDNetUtil.getLocalDns("dns2");
+      recordStepInfo("本地DNS:\t" + this._dns1 + "," + this._dns2);
+    } else {
+      recordStepInfo("本地DNS:\t" + "0.0.0.0" + "," + "0.0.0.0");
+    }
 
-	//获取远端域名的DNS解析地址
-	if(_isNetConnected){
-	   recordStepInfo("远端域名:\t" + this._dormain);
-	   _isDomainParseOk = parseDomain(this._dormain);// 域名解析
-	}
+    // 获取远端域名的DNS解析地址
+    if (_isNetConnected) {
+      recordStepInfo("远端域名:\t" + this._dormain);
+      _isDomainParseOk = parseDomain(this._dormain);// 域名解析
+    }
   }
-
 
   /**
    * 域名解析
@@ -437,12 +447,12 @@ public class LDNetDiagnoService extends
     this.recordStepInfo(log);
   }
 
-  private static final int CORE_POOL_SIZE = 15;// 4
-  private static final int MAXIMUM_POOL_SIZE = 30;// 10
-  private static final int KEEP_ALIVE = 30;// 10
+  private static final int CORE_POOL_SIZE = 1;// 4
+  private static final int MAXIMUM_POOL_SIZE = 1;// 10
+  private static final int KEEP_ALIVE = 10;// 10
 
   private static final BlockingQueue<Runnable> sWorkQueue = new LinkedBlockingQueue<Runnable>(
-      20);// 2
+      2);// 2
   private static final ThreadFactory sThreadFactory = new ThreadFactory() {
     private final AtomicInteger mCount = new AtomicInteger(1);
 
@@ -454,9 +464,7 @@ public class LDNetDiagnoService extends
     }
   };
 
-  private static final ThreadPoolExecutor sExecutor = new ThreadPoolExecutor(
-      CORE_POOL_SIZE, MAXIMUM_POOL_SIZE, KEEP_ALIVE, TimeUnit.SECONDS,
-      sWorkQueue, sThreadFactory);
+  private static ThreadPoolExecutor sExecutor = null;
 
   @Override
   protected ThreadPoolExecutor getThreadPoolExecutor() {

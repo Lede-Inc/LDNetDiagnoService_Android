@@ -120,10 +120,10 @@ public class LDNetSocket {
       long time = 0;
       int count = 0;
       if (flag == -1) {
-        log.append(TIMEOUT);
+        // log.append(TIMEOUT);
         isConnected = false;
       } else if (flag == -2) {
-        log.append(IOERR);
+        // log.append(IOERR);
         isConnected = false;
       } else {
         for (int i = 0; i < CONN_TIMES; i++) {
@@ -132,8 +132,10 @@ public class LDNetSocket {
             count++;
           }
         }
-        time = time / count;
-        log.append("average=" + time + "ms");
+        if (count > 0) {
+          time = time / count;
+          log.append("average=" + time + "ms");
+        }
       }
     } else {
       isConnected = false;
@@ -172,11 +174,18 @@ public class LDNetSocket {
       }
     }
   }
+
+  public void resetInstance() {
+    if (instance != null) {
+      instance = null;
+    }
+  }
+
   /*
    * 调用jni中native方法
    */
   public native void startJNITelnet(String host, String port);
-  
+
   static boolean loaded;
   static {
     try {

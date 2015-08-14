@@ -3,6 +3,7 @@ package com.netease.ldnetdiagnoservicedemo_android;
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -35,6 +36,7 @@ public class MainActivity extends Activity implements OnClickListener,
     text = (TextView) findViewById(R.id.text);
     edit = (EditText) findViewById(R.id.domainName);
     edit.clearFocus();
+    onClick(btn);
   }
 
   @Override
@@ -69,6 +71,23 @@ public class MainActivity extends Activity implements OnClickListener,
   }
 
   @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    Log.i("MainActivity", _netDiagnoService.toString());
+    if (_netDiagnoService != null) {
+      _netDiagnoService.stopNetDialogsis();
+    }
+
+  }
+
+  @Override
+  public void onBackPressed() {
+
+    super.onBackPressed();
+
+  }
+
+  @Override
   public void OnNetDiagnoFinished(String log) {
     text.setText(log);
     System.out.println("");
@@ -76,7 +95,6 @@ public class MainActivity extends Activity implements OnClickListener,
     btn.setText("开始诊断");
     btn.setEnabled(true);
     edit.setInputType(InputType.TYPE_CLASS_TEXT);
-    _netDiagnoService = null;
     isRunning = false;
   }
 
