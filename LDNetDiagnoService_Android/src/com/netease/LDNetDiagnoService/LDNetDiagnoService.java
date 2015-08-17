@@ -22,9 +22,9 @@ import com.netease.LDNetDiagnoUtils.LDNetUtil;
 
 /**
  * 网络诊断服务 通过对制定域名进行ping诊断和traceroute诊断收集诊断日志
- *
+ * 
  * @author panghui
- *
+ * 
  */
 public class LDNetDiagnoService extends
     LDNetAsyncTaskEx<String, String, String> implements LDNetPingListener,
@@ -208,7 +208,8 @@ public class LDNetDiagnoService extends
         _traceRouter.resetInstance();
         _traceRouter = null;
       }
-      if (!sExecutor.isShutdown()) {
+      cancel(true);// 尝试去取消线程的执行
+      if (sExecutor != null && !sExecutor.isShutdown()) {
         sExecutor.shutdown();
         sExecutor = null;
       }
