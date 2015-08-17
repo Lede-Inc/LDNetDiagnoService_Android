@@ -24,7 +24,6 @@ int InitProvider() {
 
 	if(TestProvider == NULL) {
 		TestProvider = (*jniEnv)->FindClass(jniEnv,"com/netease/LDNetDiagnoService/LDNetTraceRoute");
-		//TestProvider = jniEnv->NewGlobalRef(myClass)
 		if(TestProvider == NULL){
 			return -1;
 		}
@@ -148,10 +147,12 @@ void PrintTraceInfo(const char *aStrToPrint) {
 	}
 
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "printf call printTrackInfo begin...." );
-	jstring jstrMSG = NULL;
-	//jstrMSG =(*jniEnv)->NewStringUTF(jniEnv, "Hi,I'm From C");
-	jstrMSG =(*jniEnv)->NewStringUTF(jniEnv, aStrToPrint);
-	(*jniEnv)->CallVoidMethod(jniEnv, mTestProvider, printTraceInfo,jstrMSG);
-	(*jniEnv)->DeleteLocalRef(jniEnv, jstrMSG);
+	if(TestProvider != NULL && mTestProvider != NULL && printTraceInfo != NULL) {
+		jstring jstrMSG = NULL;
+		//jstrMSG =(*jniEnv)->NewStringUTF(jniEnv, "Hi,I'm From C");
+		jstrMSG =(*jniEnv)->NewStringUTF(jniEnv, aStrToPrint);
+		(*jniEnv)->CallVoidMethod(jniEnv, mTestProvider, printTraceInfo,jstrMSG);
+		(*jniEnv)->DeleteLocalRef(jniEnv, jstrMSG);
+	}
 }
 

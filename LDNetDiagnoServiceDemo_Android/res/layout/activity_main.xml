@@ -9,24 +9,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:layout_marginTop="5dp" 
-        android:focusable="true"   
+        android:layout_marginTop="5dp"
+        android:focusable="true"
         android:focusableInTouchMode="true"
         android:orientation="horizontal" >
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="域名："
+            android:visibility="gone"
             android:textSize="14sp" />
 
         <EditText
             android:id="@+id/domainName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:text="caipiao.163.com"
             />
     </LinearLayout>
-    
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,8 +41,9 @@
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:text="开始诊断"
+            android:visibility="gone"
             android:textSize="16sp" />
- 
+
         <ProgressBar
             android:id="@+id/progress"
             android:layout_marginLeft="10dp"

@@ -41,9 +41,7 @@ int isFirst;
 char* jstringTostring(JNIEnv* env, jstring jstr);
 JNIEXPORT void JNICALL Java_com_netease_LDNetDiagnoService_LDNetTraceRoute_startJNICTraceRoute(JNIEnv *env, jobject obj, jstring command){
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startTraceCJNI begin...." );
-	if(jniEnv == NULL) {
-		jniEnv = env;
-	}
+	jniEnv = env;
 
 	isFirst = 1;
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startTraceCJNI c_command begin...." );
@@ -85,6 +83,7 @@ int printf(const char *fmt, ...){
 	memset(buffer, OUT_LEN, 0);
 	cnt = vsnprintf(buffer, OUT_LEN, fmt, argptr);
 	buffer[cnt] = '\0';
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "print traceInfo:%s", buffer);
 	PrintTraceInfo(buffer);
 	free(buffer);
 	va_end(argptr);

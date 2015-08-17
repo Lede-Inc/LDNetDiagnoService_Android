@@ -22,9 +22,9 @@ import com.netease.LDNetDiagnoUtils.LDNetUtil;
 
 /**
  * 网络诊断服务 通过对制定域名进行ping诊断和traceroute诊断收集诊断日志
- * 
+ *
  * @author panghui
- * 
+ *
  */
 public class LDNetDiagnoService extends
     LDNetAsyncTaskEx<String, String, String> implements LDNetPingListener,
@@ -68,7 +68,7 @@ public class LDNetDiagnoService extends
 
   /**
    * 初始化网络诊断服务
-   * 
+   *
    * @param theAppCode
    * @param theDeviceID
    * @param theUID
@@ -220,7 +220,7 @@ public class LDNetDiagnoService extends
 
   /**
    * 设置是否需要JNICTraceRoute
-   * 
+   *
    * @param use
    */
   public void setIfUseJNICConn(boolean use) {
@@ -229,7 +229,7 @@ public class LDNetDiagnoService extends
 
   /**
    * 设置是否需要JNICTraceRoute
-   * 
+   *
    * @param use
    */
   public void setIfUseJNICTrace(boolean use) {
@@ -245,7 +245,7 @@ public class LDNetDiagnoService extends
 
   /**
    * 如果调用者实现了stepInfo接口，输出信息
-   * 
+   *
    * @param stepInfo
    */
   private void recordStepInfo(String stepInfo) {
@@ -448,12 +448,12 @@ public class LDNetDiagnoService extends
     this.recordStepInfo(log);
   }
 
-  private static final int CORE_POOL_SIZE = 1;// 4
-  private static final int MAXIMUM_POOL_SIZE = 1;// 10
+  private static final int CORE_POOL_SIZE = 4;// 4
+  private static final int MAXIMUM_POOL_SIZE = 10;// 10
   private static final int KEEP_ALIVE = 10;// 10
 
   private static final BlockingQueue<Runnable> sWorkQueue = new LinkedBlockingQueue<Runnable>(
-      2);// 2
+      10);// 2
   private static final ThreadFactory sThreadFactory = new ThreadFactory() {
     private final AtomicInteger mCount = new AtomicInteger(1);
 
