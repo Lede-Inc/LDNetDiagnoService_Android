@@ -353,15 +353,13 @@ public class LDNetDiagnoService extends
     // 获取当前网络类型
     _netType = LDNetUtil.getNetWorkType(_context);
     recordStepInfo("当前联网类型:\t" + _netType);
-
-    // wifi：获取本地ip和网关，其他类型：只获取ip
-    if (LDNetUtil.NETWORKTYPE_WIFI.equals(_netType)) {
-      _localIp = LDNetUtil.getLocalIpByWifi(_context);
-      _gateWay = LDNetUtil.pingGateWayInWifi(_context);
-    } else {
-      _localIp = LDNetUtil.getLocalIpBy3G();
-    }
     if (_isNetConnected) {
+      if (LDNetUtil.NETWORKTYPE_WIFI.equals(_netType)) { // wifi：获取本地ip和网关，其他类型：只获取ip
+        _localIp = LDNetUtil.getLocalIpByWifi(_context);
+        _gateWay = LDNetUtil.pingGateWayInWifi(_context);
+      } else {
+        _localIp = LDNetUtil.getLocalIpBy3G();
+      }
       recordStepInfo("本地IP:\t" + _localIp);
     } else {
       recordStepInfo("本地IP:\t" + "127.0.0.1");
