@@ -135,24 +135,25 @@ void PrintSocketInfo(const char *aStrToPrint){
 void PrintTraceInfo(const char *aStrToPrint) {
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "printf result begin...." );
 	if(isFirst == 1) {
+		pthread_mutex_lock(&mutex);
 		TestProvider = NULL;
 		mTestProvider = NULL;
 		printTraceInfo = NULL;
-//	if(TestProvider == NULL || mTestProvider == NULL || printTraceInfo == NULL) {
 		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "enter the printTraceInfo" );
 		int result = InitProvider() ;
 		if(result != 1) {
 			return;
 		}
+		pthread_mutex_unlock(&mutex);
 	}
 
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "printf call printTrackInfo begin...." );
-	if(TestProvider != NULL && mTestProvider != NULL && printTraceInfo != NULL) {
+	if(mTestProvider != NULL && printTraceInfo != NULL) {
+		pthread_mutex_lock(&mutex);
 		jstring jstrMSG = NULL;
-		//jstrMSG =(*jniEnv)->NewStringUTF(jniEnv, "Hi,I'm From C");
 		jstrMSG =(*jniEnv)->NewStringUTF(jniEnv, aStrToPrint);
 		(*jniEnv)->CallVoidMethod(jniEnv, mTestProvider, printTraceInfo,jstrMSG);
 		(*jniEnv)->DeleteLocalRef(jniEnv, jstrMSG);
+		pthread_mutex_unlock(&mutex);
 	}
 }
-

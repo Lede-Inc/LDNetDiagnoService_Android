@@ -448,12 +448,12 @@ public class LDNetDiagnoService extends
     this.recordStepInfo(log);
   }
 
-  private static final int CORE_POOL_SIZE = 4;// 4
-  private static final int MAXIMUM_POOL_SIZE = 10;// 10
+  private static final int CORE_POOL_SIZE = 1;// 4
+  private static final int MAXIMUM_POOL_SIZE = 1;// 10
   private static final int KEEP_ALIVE = 10;// 10
 
   private static final BlockingQueue<Runnable> sWorkQueue = new LinkedBlockingQueue<Runnable>(
-      10);// 2
+      2);// 2
   private static final ThreadFactory sThreadFactory = new ThreadFactory() {
     private final AtomicInteger mCount = new AtomicInteger(1);
 

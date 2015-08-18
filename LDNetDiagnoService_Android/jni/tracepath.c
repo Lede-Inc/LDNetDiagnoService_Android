@@ -40,6 +40,11 @@ JNIEnv* jniEnv;
 int isFirst;
 char* jstringTostring(JNIEnv* env, jstring jstr);
 JNIEXPORT void JNICALL Java_com_netease_LDNetDiagnoService_LDNetTraceRoute_startJNICTraceRoute(JNIEnv *env, jobject obj, jstring command){
+	//初始化互斥量
+	if(&mutex == NULL){
+		pthread_mutex_init(&mutex, NULL);
+	}
+
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startTraceCJNI begin...." );
 	jniEnv = env;
 
