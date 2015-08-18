@@ -1,17 +1,14 @@
 #include "Provider.h"
 
-extern int isFirst;
-extern JNIEnv* jniEnvTelnet;
-extern int isFirstTelnet;
+//
+//主要用于TracePath信息的输出
+//
 
+extern int isFirst;
 JavaVM *gJvm;
 jclass TestProvider;
 jobject mTestProvider;
 jmethodID printTraceInfo;
-
-jclass _LDNetSocket;
-jobject _mLDNetSocket;
-jmethodID printSocketInfo;
 
 /**
  * 初始化 类、对象、方法
@@ -61,9 +58,51 @@ int InitProvider(JNIEnv *jniEnv) {
 }
 
 /**
- * 初始化 类、对象、方法
+ * SayHello ---- 调用 Java 方法
  */
-int InitSocketInfo() {
+void PrintTraceInfo(const char *aStrToPrint) {
+	//获取当前线程的jniEnv
+	JNIEnv *jniEnv;
+	(*gJvm)->GetEnv(gJvm, (void **)&jniEnv, JNI_VERSION_1_6);
+	if(jniEnv == NULL){
+		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "get jniEnv from currentThread null...." );
+		return;
+	}
+
+	if(isFirst == 1) {
+		TestProvider = NULL;
+		mTestProvider = NULL;
+		printTraceInfo = NULL;
+		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "init the provider info...." );
+		int result = InitProvider(jniEnv);
+		if(result != 1) {
+			return;
+		}
+	}
+
+	if(mTestProvider != NULL && printTraceInfo != NULL) {
+		jstring jstrMSG = NULL;
+		jstrMSG =(*jniEnv)->NewStringUTF(jniEnv, aStrToPrint);
+		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "call java printTrackInfo begin...." );
+		(*jniEnv)->CallVoidMethod(jniEnv, mTestProvider, printTraceInfo,jstrMSG);
+		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "call java printTrackInfo after...." );
+		(*jniEnv)->DeleteLocalRef(jniEnv, jstrMSG);
+	}
+}
+
+
+//
+//主要用于TracePath信息的输出
+//
+
+extern int isFirstTelnet;
+JavaVM *gTelnetJvm;
+jclass _LDNetSocket;
+jobject _mLDNetSocket;
+jmethodID printSocketInfo;
+
+
+int InitSocketInfo(JNIEnv* jniEnvTelnet) {
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "InitSocketInfo Begin  1 ok" );
 	if(jniEnvTelnet == NULL) {
 		return 0;
@@ -107,15 +146,22 @@ int InitSocketInfo() {
 	return 1;
 }
 
+
 void PrintSocketInfo(const char *aStrToPrint){
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "PrintSocketInfo begin...." );
+	//获取当前线程的jniEnv
+	JNIEnv *jniEnvTelnet;
+	(*gTelnetJvm)->GetEnv(gTelnetJvm, (void **)&jniEnvTelnet, JNI_VERSION_1_6);
+	if(jniEnvTelnet == NULL){
+		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "get jniEnvTelnet from currentThread null...." );
+		return;
+	}
+
 	if(isFirstTelnet == 1) {
 		_LDNetSocket = NULL;
 		_mLDNetSocket = NULL;
 		printSocketInfo = NULL;
-//	if(TestProvider == NULL || mTestProvider == NULL || printTraceInfo == NULL) {
-		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "enter the printSocketInfo" );
-		int result = InitSocketInfo() ;
+		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "init the SocketProvider info...." );
+		int result = InitSocketInfo(jniEnvTelnet) ;
 		if(result != 1) {
 			return;
 		}
@@ -123,44 +169,7 @@ void PrintSocketInfo(const char *aStrToPrint){
 
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "printf call printSocketInfo begin...." );
 	jstring jstrMSG = NULL;
-	//jstrMSG =(*jniEnv)->NewStringUTF(jniEnv, "Hi,I'm From C");
 	jstrMSG =(*jniEnvTelnet)->NewStringUTF(jniEnvTelnet, aStrToPrint);
 	(*jniEnvTelnet)->CallVoidMethod(jniEnvTelnet, _mLDNetSocket, printSocketInfo,jstrMSG);
-	//(*jniEnvTelnet)->DeleteLocalRef(jniEnvTelnet, jstrMSG);
-}
-
-/**
- * SayHello ---- 调用 Java 方法
- */
-void PrintTraceInfo(const char *aStrToPrint) {
-	//获取当前线程的jniEnv
-	JNIEnv *jniEnv;
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "get jniEnv from currentThread 1...." );
-	(*gJvm)->GetEnv(gJvm, (void **)&jniEnv, JNI_VERSION_1_6);
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "get jniEnv from currentThread 2...." );
-	if(jniEnv == NULL){
-		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "get jniEnv from currentThread null...." );
-	} else {
-		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "get jniEnv from currentThread success...." );
-	}
-
-	if(isFirst == 1) {
-		TestProvider = NULL;
-		mTestProvider = NULL;
-		printTraceInfo = NULL;
-		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "init the provider info...." );
-		int result = InitProvider(jniEnv);
-		if(result != 1) {
-			return;
-		}
-	}
-
-	if(mTestProvider != NULL && printTraceInfo != NULL) {
-		jstring jstrMSG = NULL;
-		jstrMSG =(*jniEnv)->NewStringUTF(jniEnv, aStrToPrint);
-		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "call java printTrackInfo begin...." );
-		(*jniEnv)->CallVoidMethod(jniEnv, mTestProvider, printTraceInfo,jstrMSG);
-		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "call java printTrackInfo after...." );
-		(*jniEnv)->DeleteLocalRef(jniEnv, jstrMSG);
-	}
+	(*jniEnvTelnet)->DeleteLocalRef(jniEnvTelnet, jstrMSG);
 }

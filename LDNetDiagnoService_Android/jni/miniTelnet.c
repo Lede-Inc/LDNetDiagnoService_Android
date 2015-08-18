@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -15,15 +16,16 @@
 #include "Provider.h"
 #define OUT_LEN 1000
 
-JNIEnv* jniEnvTelnet;
+JavaVM *gTelnetJvm = NULL;
+pthread_mutex_t mutexTel = PTHREAD_MUTEX_INITIALIZER;
+
 int isFirstTelnet;
 extern char* jstringTostring(JNIEnv* env, jstring jstr);
 int Lprintf(const char *fmt, ...);
 JNIEXPORT void JNICALL Java_com_netease_LDNetDiagnoService_LDNetSocket_startJNITelnet(JNIEnv *env, jobject obj, jstring command, jstring port){
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNITelnet begin...." );
-	if(jniEnvTelnet == NULL) {
-		jniEnvTelnet = env;
-	}
+	(*env)->GetJavaVM(env, &gTelnetJvm);
+	(*gTelnetJvm)->AttachCurrentThread(gTelnetJvm, &env, NULL);
 
 	isFirstTelnet = 1;
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startJNITelnet c_command begin...." );
@@ -37,7 +39,7 @@ JNIEXPORT void JNICALL Java_com_netease_LDNetDiagnoService_LDNetSocket_startJNIT
 }
 
 /**
- * 重载printf函数，将traceroute的结果通过PrintTraceInfo返回到java环境
+ * 重载printf函数，将tcpConnect的结果通过PrintTraceInfo返回到java环境
  */
 int Lprintf(const char *fmt, ...){
 	va_list argptr;
@@ -47,7 +49,11 @@ int Lprintf(const char *fmt, ...){
 	memset(buffer, OUT_LEN, 0);
 	cnt = vsnprintf(buffer, OUT_LEN, fmt, argptr);
 	buffer[cnt] = '\0';
+	pthread_mutex_lock(&mutexTel);
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "print lock:>>>>>>%d", mutexTel.value);
 	PrintSocketInfo(buffer);
+	pthread_mutex_unlock(&mutexTel);
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "print unlock>>>>>>%d", mutexTel.value);
 	free(buffer);
 	va_end(argptr);
 	isFirstTelnet++;
@@ -164,7 +170,7 @@ int mainConnect (int argc, char* argv[])
 		Lprintf("connect to host failed, argument mismatch\n");
 		return 0;
 	}
-	
+
 	/*打印本地ip地址*/
 	//printf("local host IP: %s", GetLocalIp());
 	bzero((char *) &serv_addr, sizeof(serv_addr));
