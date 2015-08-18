@@ -51,6 +51,7 @@ public class MainActivity extends Activity implements OnClickListener,
             "MobilCountryCode", "MobileNetCode", this);
         // 设置是否使用JNIC 完成traceroute
         _netDiagnoService.setIfUseJNICTrace(true);
+//        _netDiagnoService.setIfUseJNICConn(true);
         _netDiagnoService.execute();
         progress.setVisibility(View.VISIBLE);
         text.setText("Traceroute with max 30 hops...");
