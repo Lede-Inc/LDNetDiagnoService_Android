@@ -1,10 +1,10 @@
 #include "Provider.h"
 
-extern JNIEnv* jniEnv;
 extern int isFirst;
 extern JNIEnv* jniEnvTelnet;
 extern int isFirstTelnet;
 
+JavaVM *gJvm;
 jclass TestProvider;
 jobject mTestProvider;
 jmethodID printTraceInfo;
@@ -16,7 +16,7 @@ jmethodID printSocketInfo;
 /**
  * 初始化 类、对象、方法
  */
-int InitProvider() {
+int InitProvider(JNIEnv *jniEnv) {
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "InitProvider Begin  1 ok" );
 	if(jniEnv == NULL) {
 		return 0;
@@ -133,27 +133,34 @@ void PrintSocketInfo(const char *aStrToPrint){
  * SayHello ---- 调用 Java 方法
  */
 void PrintTraceInfo(const char *aStrToPrint) {
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "printf result begin...." );
+	//获取当前线程的jniEnv
+	JNIEnv *jniEnv;
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "get jniEnv from currentThread 1...." );
+	(*gJvm)->GetEnv(gJvm, (void **)&jniEnv, JNI_VERSION_1_6);
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "get jniEnv from currentThread 2...." );
+	if(jniEnv == NULL){
+		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "get jniEnv from currentThread null...." );
+	} else {
+		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "get jniEnv from currentThread success...." );
+	}
+
 	if(isFirst == 1) {
-		pthread_mutex_lock(&mutex);
 		TestProvider = NULL;
 		mTestProvider = NULL;
 		printTraceInfo = NULL;
-		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "enter the printTraceInfo" );
-		int result = InitProvider() ;
+		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "init the provider info...." );
+		int result = InitProvider(jniEnv);
 		if(result != 1) {
 			return;
 		}
-		pthread_mutex_unlock(&mutex);
 	}
 
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "printf call printTrackInfo begin...." );
 	if(mTestProvider != NULL && printTraceInfo != NULL) {
-		pthread_mutex_lock(&mutex);
 		jstring jstrMSG = NULL;
 		jstrMSG =(*jniEnv)->NewStringUTF(jniEnv, aStrToPrint);
+		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "call java printTrackInfo begin...." );
 		(*jniEnv)->CallVoidMethod(jniEnv, mTestProvider, printTraceInfo,jstrMSG);
+		__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "call java printTrackInfo after...." );
 		(*jniEnv)->DeleteLocalRef(jniEnv, jstrMSG);
-		pthread_mutex_unlock(&mutex);
 	}
 }

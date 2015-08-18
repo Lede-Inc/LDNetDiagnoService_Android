@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -36,17 +37,14 @@
 /**
  * java调用c中的tracePath方法，
  */
-JNIEnv* jniEnv;
+JavaVM *gJvm = NULL;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 int isFirst;
 char* jstringTostring(JNIEnv* env, jstring jstr);
 JNIEXPORT void JNICALL Java_com_netease_LDNetDiagnoService_LDNetTraceRoute_startJNICTraceRoute(JNIEnv *env, jobject obj, jstring command){
-	//初始化互斥量
-	if(&mutex == NULL){
-		pthread_mutex_init(&mutex, NULL);
-	}
-
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startTraceCJNI begin...." );
-	jniEnv = env;
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "===============begin=====================" );
+	(*env)->GetJavaVM(env, &gJvm);
+	(*gJvm)->AttachCurrentThread(gJvm, &env, NULL);
 
 	isFirst = 1;
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startTraceCJNI c_command begin...." );
@@ -54,6 +52,7 @@ JNIEXPORT void JNICALL Java_com_netease_LDNetDiagnoService_LDNetTraceRoute_start
 	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "startTraceCJNI c_command end...." );
 	char* argv[]={"tracepath", c_command};
 	mainTracePath(2, argv);
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "===============end=====================" );
 }
 
 /**
@@ -88,8 +87,11 @@ int printf(const char *fmt, ...){
 	memset(buffer, OUT_LEN, 0);
 	cnt = vsnprintf(buffer, OUT_LEN, fmt, argptr);
 	buffer[cnt] = '\0';
-	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "print traceInfo:%s", buffer);
+	pthread_mutex_lock(&mutex);
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "print lock:>>>>>>%d", mutex.value);
 	PrintTraceInfo(buffer);
+	pthread_mutex_unlock(&mutex);
+	__android_log_print(ANDROID_LOG_INFO, "JNIMsg", "print unlock>>>>>>%d", mutex.value);
 	free(buffer);
 	va_end(argptr);
 	isFirst++;
