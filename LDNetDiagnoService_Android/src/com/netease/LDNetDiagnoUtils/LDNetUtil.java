@@ -2,6 +2,7 @@ package com.netease.LDNetDiagnoUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -20,10 +21,12 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.util.Log;
 
 @SuppressLint("DefaultLocale")
 public class LDNetUtil {
+
+  public static final String OPEN_IP = "114.113.198.130";// 可ping的IP地址
+  public static final String OPERATOR_URL = "http://nstool.netease.com/info.js";
 
   public static final String NETWORKTYPE_INVALID = "UNKNOWN";// 没有网络
   public static final String NETWORKTYPE_WAP = "WAP"; // wap网络
@@ -257,5 +260,30 @@ public class LDNetUtil {
     default:
       return "4G";
     }
+  }
+
+  /**
+   * 输入流转变成字符串
+   */
+  public static String getStringFromStream(InputStream is) {
+    byte[] bytes = new byte[1024];
+    int len = 0;
+    String res = "";
+    try {
+      while ((len = is.read(bytes)) != -1) {
+        res = res + new String(bytes, 0, len, "gbk");
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    } finally {
+      if (is != null) {
+        try {
+          is.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return res;
   }
 }

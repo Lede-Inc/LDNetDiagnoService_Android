@@ -1,6 +1,10 @@
 package com.netease.LDNetDiagnoService;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -152,8 +156,15 @@ public class LDNetDiagnoService extends
     recordLocalNetEnvironmentInfo();
 
     if (_isNetConnected) {
+      // 获取运营商信息
+      recordStepInfo("\n开始获取运营商信息...");
+      String operatorInfo = requestOperatorInfo();
+      if (operatorInfo != null) {
+        recordStepInfo(operatorInfo);
+      }
+
       // TCP三次握手时间测试
-      recordStepInfo("\n开始TCP连接测试...");
+      recordStepInfo("开始TCP连接测试...");
       _netSocker = LDNetSocket.getInstance();
       _netSocker._remoteInet = _remoteInet;
       _netSocker._remoteIpList = _remoteIpList;
@@ -162,8 +173,8 @@ public class LDNetDiagnoService extends
       _isSocketConnected = _netSocker.exec(_dormain);
 
       // 诊断ping信息, 同步过程
+      recordStepInfo("\n开始ping...");
       if (!(_isNetConnected && _isDomainParseOk && _isSocketConnected)) {// 联网&&DNS解析成功&&connect测试成功
-        recordStepInfo("\n开始ping...");
         _netPinger = new LDNetPing(this, 4);
         recordStepInfo("ping...127.0.0.1");
         _netPinger.exec("127.0.0.1");
@@ -178,6 +189,15 @@ public class LDNetDiagnoService extends
         recordStepInfo("ping本地DNS2..." + _dns2);
         _netPinger.exec(_dns2);
       }
+      // ping 114.113.198.130
+      if (_netPinger == null) {
+        _netPinger = new LDNetPing(this, 4);
+      }
+      if (_netPinger != null) {
+        recordStepInfo("ping..." + LDNetUtil.OPEN_IP);
+        _netPinger.exec(LDNetUtil.OPEN_IP);
+      }
+
       // 开始诊断traceRoute
       recordStepInfo("\n开始traceroute...");
       _traceRouter = LDNetTraceRoute.getInstance();
@@ -436,6 +456,42 @@ public class LDNetDiagnoService extends
       }
     }
     return flag;
+  }
+
+  /**
+   * 获取运营商信息
+   */
+  private String requestOperatorInfo() {
+    String res = null;
+    String url = LDNetUtil.OPERATOR_URL;
+    HttpURLConnection conn = null;
+    URL Operator_url;
+    try {
+      Operator_url = new URL(url);
+      conn = (HttpURLConnection) Operator_url.openConnection();
+      conn.setRequestMethod("GET");
+      conn.setConnectTimeout(1000 * 10);
+      conn.connect();
+      int responseCode = conn.getResponseCode();
+      if (responseCode == 200) {
+        res = LDNetUtil.getStringFromStream(conn.getInputStream());
+        if (conn != null) {
+          conn.disconnect();
+        }
+      }
+      return res;
+    } catch (MalformedURLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } finally {
+      if (conn != null) {
+        conn.disconnect();
+      }
+    }
+    return res;
   }
 
   /**
