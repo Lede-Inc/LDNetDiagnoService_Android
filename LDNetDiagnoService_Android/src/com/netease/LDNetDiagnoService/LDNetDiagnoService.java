@@ -26,9 +26,9 @@ import com.netease.LDNetDiagnoUtils.LDNetUtil;
 
 /**
  * 网络诊断服务 通过对制定域名进行ping诊断和traceroute诊断收集诊断日志
- *
+ * 
  * @author panghui
- *
+ * 
  */
 public class LDNetDiagnoService extends
     LDNetAsyncTaskEx<String, String, String> implements LDNetPingListener,
@@ -72,7 +72,7 @@ public class LDNetDiagnoService extends
 
   /**
    * 初始化网络诊断服务
-   *
+   * 
    * @param theAppCode
    * @param theDeviceID
    * @param theUID
@@ -177,17 +177,17 @@ public class LDNetDiagnoService extends
       if (!(_isNetConnected && _isDomainParseOk && _isSocketConnected)) {// 联网&&DNS解析成功&&connect测试成功
         _netPinger = new LDNetPing(this, 4);
         recordStepInfo("ping...127.0.0.1");
-        _netPinger.exec("127.0.0.1");
+        _netPinger.exec("127.0.0.1", false);
         recordStepInfo("ping本机IP..." + _localIp);
-        _netPinger.exec(_localIp);
+        _netPinger.exec(_localIp, false);
         if (LDNetUtil.NETWORKTYPE_WIFI.equals(_netType)) {// 在wifi下ping网关
           recordStepInfo("ping本地网关..." + _gateWay);
-          _netPinger.exec(_gateWay);
+          _netPinger.exec(_gateWay, false);
         }
         recordStepInfo("ping本地DNS1..." + _dns1);
-        _netPinger.exec(_dns1);
+        _netPinger.exec(_dns1, false);
         recordStepInfo("ping本地DNS2..." + _dns2);
-        _netPinger.exec(_dns2);
+        _netPinger.exec(_dns2, false);
       }
       // ping 114.113.198.130
       if (_netPinger == null) {
@@ -195,7 +195,7 @@ public class LDNetDiagnoService extends
       }
       if (_netPinger != null) {
         recordStepInfo("ping..." + LDNetUtil.OPEN_IP);
-        _netPinger.exec(LDNetUtil.OPEN_IP);
+        _netPinger.exec(LDNetUtil.OPEN_IP, true);
       }
 
       // 开始诊断traceRoute

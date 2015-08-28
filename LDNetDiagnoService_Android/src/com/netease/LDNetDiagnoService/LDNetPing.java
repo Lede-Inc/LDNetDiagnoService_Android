@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 import android.util.Log;
 
-import com.netease.LDNetDiagnoUtils.LDNetUtil;
 import com.netease.LDNetDiagnoUtils.LDPingParse;
 
 /**
@@ -42,9 +41,9 @@ public class LDNetPing {
    * @param ping
    * @return
    */
-  private String execPing(PingTask ping) {
+  private String execPing(PingTask ping, boolean isNeedL) {
     String cmd = "ping -c ";
-    if (LDNetUtil.OPEN_IP.equals(ping.getHost())) {
+    if (isNeedL) {
       cmd = "ping -s 8185 -c  ";
     }
     Process process = null;
@@ -84,10 +83,10 @@ public class LDNetPing {
    * @param host
    * @return
    */
-  public void exec(String host) {
+  public void exec(String host, boolean isNeedL) {
     PingTask pingTask = new PingTask(host);
     StringBuilder log = new StringBuilder(256);
-    String status = execPing(pingTask);
+    String status = execPing(pingTask, isNeedL);
     if (Pattern.compile(MATCH_PING_IP).matcher(status).find()) {
       Log.i("LDNetPing", "status" + status);
       log.append("\t" + status);
