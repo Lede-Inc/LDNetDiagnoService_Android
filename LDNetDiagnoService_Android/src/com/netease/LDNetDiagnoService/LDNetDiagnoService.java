@@ -189,7 +189,7 @@ public class LDNetDiagnoService extends
         recordStepInfo("ping本地DNS2..." + _dns2);
         _netPinger.exec(_dns2, false);
       }
-      // ping 114.113.198.130
+      
       if (_netPinger == null) {
         _netPinger = new LDNetPing(this, 4);
       }
